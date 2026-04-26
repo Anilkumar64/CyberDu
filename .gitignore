@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.logs/
+.pids/
+*.deb
+cyberguard.db
+*.sqlite3
+node_modules/
+dist/
+ml-service/models/
+backend/.env

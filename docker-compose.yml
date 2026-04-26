@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: cyberguard-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  ml-service:
+    build:
+      context: ./ml-service
+    container_name: cyberguard-ml-service
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./ml-service/models:/app/models
+
+  backend:
+    build:
+      context: ./backend
+    container_name: cyberguard-backend
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - MONGO_URI=mongodb://mongo:27017/cyberguard
+      - ML_SERVICE_URL=http://ml-service:7000
+      - FRONTEND_ORIGIN=http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:5174,http://localhost:5174
+      - JWT_ACCESS_SECRET=local-dev-access-secret-please-change-before-production-2026
+      - JWT_REFRESH_SECRET=local-dev-refresh-secret-please-change-before-production-2026
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - ml-service
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: cyberguard-frontend
+    environment:
+      - VITE_API_URL=http://127.0.0.1:8080/api
+      - VITE_SOCKET_URL=http://127.0.0.1:8080
+    ports:
+      - "5174:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:

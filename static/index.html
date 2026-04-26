@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CyberGuard Student Safety Console</title>
+<style>
+* { box-sizing: border-box; }
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-soft: #f9fbff;
+  --text: #172033;
+  --muted: #647086;
+  --line: #dfe6f1;
+  --primary: #1f6feb;
+  --primary-dark: #1557b3;
+  --danger: #c8324b;
+  --danger-soft: #fdecef;
+  --ok: #1f8a58;
+  --ok-soft: #eaf7f0;
+  --warn: #b7791f;
+  --warn-soft: #fff5dc;
+  --shadow: 0 14px 38px rgba(28, 44, 74, .10);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+}
+button, input, textarea, select {
+  font: inherit;
+}
+button {
+  border: 0;
+  cursor: pointer;
+}
+textarea {
+  resize: vertical;
+  min-height: 116px;
+}
+.hidden { display: none !important; }
+.shell {
+  min-height: 100vh;
+}
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) 1fr;
+}
+.auth-panel {
+  background: var(--panel);
+  padding: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--line);
+}
+.auth-visual {
+  padding: 56px;
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(31,111,235,.10), rgba(31,138,88,.08)),
+    url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=80") center/cover;
+  position: relative;
+}
+.auth-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(245,247,251,.72);
+}
+.auth-copy {
+  position: relative;
+  max-width: 680px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  margin-bottom: 28px;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+}
+.auth-title {
+  font-size: 32px;
+  line-height: 1.12;
+  margin: 0 0 10px;
+}
+.auth-subtitle,
+.muted {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px;
+  margin: 28px 0 22px;
+}
+.auth-tabs button {
+  min-height: 38px;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  font-weight: 700;
+}
+.auth-tabs button.active {
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 3px 12px rgba(24, 38, 61, .08);
+}
+.form {
+  display: grid;
+  gap: 14px;
+}
+.field {
+  display: grid;
+  gap: 7px;
+}
+.field label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+.input, .textarea, .select {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 8px;
+  padding: 11px 12px;
+  color: var(--text);
+  outline: none;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(31,111,235,.13);
+}
+.primary-btn, .ghost-btn, .danger-btn, .icon-btn {
+  min-height: 40px;
+  border-radius: 8px;
+  font-weight: 800;
+  padding: 0 16px;
+}
+.primary-btn {
+  color: white;
+  background: var(--primary);
+}
+.primary-btn:hover { background: var(--primary-dark); }
+.ghost-btn {
+  color: var(--text);
+  background: white;
+  border: 1px solid var(--line);
+}
+.danger-btn {
+  color: white;
+  background: var(--danger);
+}
+.error {
+  color: var(--danger);
+  min-height: 20px;
+  font-size: 13px;
+}
+.success {
+  color: var(--ok);
+  min-height: 20px;
+  font-size: 13px;
+}
+.topbar {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: white;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--ok);
+  font-weight: 800;
+}
+.main {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 28px;
+}
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.hero h1 {
+  font-size: 30px;
+  margin: 0 0 7px;
+}
+.grid {
+  display: grid;
+  gap: 18px;
+}
+.stats {
+  grid-template-columns: repeat(5, 1fr);
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.stat {
+  padding: 18px;
+}
+.stat-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 850;
+  margin-top: 6px;
+}
+.workspace {
+  grid-template-columns: 1.12fr .88fr;
+  align-items: start;
+  margin-top: 18px;
+}
+.card-head {
+  padding: 18px 18px 0;
+}
+.card-title {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.card-body {
+  padding: 18px;
+}
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.result {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  margin-top: 16px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.badge.NONE { color: var(--ok); background: var(--ok-soft); }
+.badge.LOW, .badge.MEDIUM { color: var(--warn); background: var(--warn-soft); }
+.badge.HIGH { color: var(--danger); background: var(--danger-soft); }
+.risk-track {
+  height: 9px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.risk-fill {
+  height: 100%;
+  width: 0;
+  background: var(--primary);
+}
+.risk-fill.HIGH { background: var(--danger); }
+.risk-fill.LOW, .risk-fill.MEDIUM { background: var(--warn); }
+.risk-fill.NONE { background: var(--ok); }
+.flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.flag {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.tabs button {
+  background: var(--panel-soft);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 800;
+}
+.tabs button.active {
+  color: white;
+  background: var(--text);
+  border-color: var(--text);
+}
+.table-wrap {
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  font-size: 14px;
+}
+th {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.text-cell {
+  max-width: 360px;
+  color: var(--muted);
+}
+.label-actions {
+  display: flex;
+  gap: 6px;
+}
+.mini-btn {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: white;
+  font-weight: 800;
+}
+.mini-btn.safe { color: var(--ok); }
+.mini-btn.bully { color: var(--danger); }
+@media (max-width: 960px) {
+  .auth-shell, .workspace, .stats {
+    grid-template-columns: 1fr;
+  }
+  .auth-visual {
+    display: none;
+  }
+  .hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 620px) {
+  .auth-panel, .main {
+    padding: 22px;
+  }
+  .topbar {
+    padding: 0 16px;
+  }
+  .two, .result {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<section id="auth-shell" class="auth-shell">
+  <div class="auth-panel">
+    <div class="brand"><span class="brand-mark">CG</span><span>CyberGuard</span></div>
+    <h1 class="auth-title">Student cyberbullying risk console</h1>
+    <p class="auth-subtitle">Sign in to analyze messages, build a labeled student dataset, and retrain the model from database records.</p>
+
+    <div class="auth-tabs">
+      <button id="login-tab" class="active" onclick="setAuthMode('login')">Login</button>
+      <button id="signup-tab" onclick="setAuthMode('signup')">Signup</button>
+    </div>
+
+    <form id="login-form" class="form" onsubmit="login(event)">
+      <div class="field">
+        <label>Email</label>
+        <input class="input" id="login-email" type="email" required autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input class="input" id="login-password" type="password" required autocomplete="current-password"/>
+      </div>
+      <button class="primary-btn" type="submit">Login</button>
+    </form>
+
+    <form id="signup-form" class="form hidden" onsubmit="signup(event)">
+      <div class="field">
+        <label>Name</label>
+        <input class="input" id="signup-name" type="text" required autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input class="input" id="signup-email" type="email" required autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input class="input" id="signup-password" type="password" minlength="8" required autocomplete="new-password"/>
+      </div>
+      <button class="primary-btn" type="submit">Create Account</button>
+    </form>
+    <div class="error" id="auth-error"></div>
+  </div>
+  <div class="auth-visual">
+    <div class="auth-copy">
+      <h2 class="auth-title">A resume-ready ML workflow, not just a prediction form.</h2>
+      <p class="auth-subtitle">Authentication, SQLite persistence, human labeling, model retraining, metrics, and batch analysis are built into one project.</p>
+    </div>
+  </div>
+</section>
+
+<section id="app-shell" class="shell hidden">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">CG</span><span>CyberGuard</span></div>
+    <div class="user-chip">
+      <span class="avatar" id="avatar">U</span>
+      <span id="user-name">Teacher</span>
+      <button class="ghost-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="hero">
+      <div>
+        <h1>Student Safety Dashboard</h1>
+        <div class="muted">Analyze messages, label records, and retrain the model from database-backed student data.</div>
+      </div>
+      <button class="primary-btn" onclick="retrainModel()">Retrain Model</button>
+    </div>
+
+    <section class="grid stats">
+      <div class="card stat"><div class="stat-label">Total Records</div><div class="stat-value" id="total-samples">0</div></div>
+      <div class="card stat"><div class="stat-label">Labeled</div><div class="stat-value" id="labeled-samples">0</div></div>
+      <div class="card stat"><div class="stat-label">Bullying</div><div class="stat-value" id="bullying-samples">0</div></div>
+      <div class="card stat"><div class="stat-label">Safe</div><div class="stat-value" id="safe-samples">0</div></div>
+      <div class="card stat"><div class="stat-label">Accuracy</div><div class="stat-value" id="model-accuracy">--</div></div>
+    </section>
+
+    <section class="grid workspace">
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Message Analyzer</h2>
+          <div class="muted">Saved predictions can be labeled later and included in retraining.</div>
+        </div>
+        <div class="card-body">
+          <div class="two">
+            <div class="field">
+              <label>Student Name</label>
+              <input class="input" id="student-name" value="Anonymous Student"/>
+            </div>
+            <div class="field">
+              <label>Save Prediction</label>
+              <select class="select" id="save-sample">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Message</label>
+            <textarea class="textarea" id="message-text" maxlength="2000" placeholder="Paste a student message here..."></textarea>
+          </div>
+          <div class="action-row">
+            <button class="primary-btn" onclick="analyze()">Analyze</button>
+            <button class="ghost-btn" onclick="useExample('Had a great day with my classmates')">Safe Example</button>
+            <button class="ghost-btn" onclick="useExample('You are stupid and nobody likes you')">Risk Example</button>
+          </div>
+          <div id="result"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Add Labeled Training Data</h2>
+          <div class="muted">These records become part of the database dataset.</div>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Student Name</label>
+            <input class="input" id="manual-student" value="Manual Entry"/>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Label</label>
+            <select class="select" id="manual-label">
+              <option value="0">Safe</option>
+              <option value="1">Cyberbullying</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Message</label>
+            <textarea class="textarea" id="manual-text" placeholder="Add verified training message..."></textarea>
+          </div>
+          <div class="action-row">
+            <button class="primary-btn" onclick="addManualSample()">Save Training Sample</button>
+          </div>
+          <div class="success" id="manual-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="card-head">
+        <h2 class="card-title">Batch Analysis</h2>
+        <div class="muted">Enter one message per line. The latest 20 valid lines are saved as prediction records.</div>
+      </div>
+      <div class="card-body">
+        <textarea class="textarea" id="batch-text" placeholder="One message per line..."></textarea>
+        <div class="action-row">
+          <button class="primary-btn" onclick="runBatch()">Run Batch</button>
+        </div>
+        <div id="batch-output" class="muted" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="card-head">
+        <h2 class="card-title">Student Dataset</h2>
+        <div class="muted">Label prediction records to improve the next training run.</div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Message</th>
+                <th>Prediction</th>
+                <th>Label</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="samples-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<script>
+let activeUser = null;
+
+const api = async (path, options = {}) => {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+};
+
+function setAuthMode(mode) {
+  document.getElementById("login-tab").classList.toggle("active", mode === "login");
+  document.getElementById("signup-tab").classList.toggle("active", mode === "signup");
+  document.getElementById("login-form").classList.toggle("hidden", mode !== "login");
+  document.getElementById("signup-form").classList.toggle("hidden", mode !== "signup");
+  document.getElementById("auth-error").textContent = "";
+}
+
+async function login(event) {
+  event.preventDefault();
+  try {
+    const data = await api("/api/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: document.getElementById("login-email").value,
+        password: document.getElementById("login-password").value,
+      }),
+    });
+    enterApp(data.user);
+  } catch (err) {
+    document.getElementById("auth-error").textContent = err.message;
+  }
+}
+
+async function signup(event) {
+  event.preventDefault();
+  try {
+    const data = await api("/api/signup", {
+      method: "POST",
+      body: JSON.stringify({
+        name: document.getElementById("signup-name").value,
+        email: document.getElementById("signup-email").value,
+        password: document.getElementById("signup-password").value,
+      }),
+    });
+    enterApp(data.user);
+  } catch (err) {
+    document.getElementById("auth-error").textContent = err.message;
+  }
+}
+
+async function logout() {
+  await api("/api/logout", { method: "POST" });
+  activeUser = null;
+  document.getElementById("auth-shell").classList.remove("hidden");
+  document.getElementById("app-shell").classList.add("hidden");
+}
+
+function enterApp(user) {
+  activeUser = user;
+  document.getElementById("auth-shell").classList.add("hidden");
+  document.getElementById("app-shell").classList.remove("hidden");
+  document.getElementById("user-name").textContent = user.name;
+  document.getElementById("avatar").textContent = user.name.slice(0, 1).toUpperCase();
+  refreshDashboard();
+}
+
+async function refreshDashboard() {
+  const [stats, samples] = await Promise.all([api("/api/stats"), api("/api/samples")]);
+  const counts = stats.counts;
+  document.getElementById("total-samples").textContent = counts.total_samples || 0;
+  document.getElementById("labeled-samples").textContent = counts.labeled_samples || 0;
+  document.getElementById("bullying-samples").textContent = counts.bullying_samples || 0;
+  document.getElementById("safe-samples").textContent = counts.safe_samples || 0;
+  const acc = stats.latest_model && stats.latest_model.accuracy;
+  document.getElementById("model-accuracy").textContent = acc ? `${Math.round(acc * 100)}%` : "--";
+  renderSamples(samples.samples);
+}
+
+function useExample(text) {
+  document.getElementById("message-text").value = text;
+}
+
+async function analyze() {
+  const text = document.getElementById("message-text").value.trim();
+  if (!text) return;
+  const data = await api("/api/predict", {
+    method: "POST",
+    body: JSON.stringify({
+      text,
+      student_name: document.getElementById("student-name").value,
+      save_sample: document.getElementById("save-sample").value === "yes",
+    }),
+  });
+  renderResult(data);
+  refreshDashboard();
+}
+
+function renderResult(data) {
+  const sev = data.severity;
+  const label = data.is_bullying ? "Cyberbullying Detected" : "Message Appears Safe";
+  const flags = data.flagged_words.length
+    ? data.flagged_words.map((word) => `<span class="flag">${escapeHtml(word)}</span>`).join("")
+    : `<span class="muted">No toxic terms from the dictionary were found.</span>`;
+  document.getElementById("result").innerHTML = `
+    <div class="result">
+      <div><span class="badge ${sev}">${sev} Risk</span></div>
+      <div>
+        <strong>${label}</strong>
+        <div class="muted">${data.risk_score}% risk score and ${data.confidence}% confidence</div>
+        <div class="risk-track"><div class="risk-fill ${sev}" style="width:${data.risk_score}%"></div></div>
+        <div class="flags">${flags}</div>
+      </div>
+    </div>`;
+}
+
+async function addManualSample() {
+  await api("/api/samples", {
+    method: "POST",
+    body: JSON.stringify({
+      student_name: document.getElementById("manual-student").value,
+      label: document.getElementById("manual-label").value,
+      text: document.getElementById("manual-text").value,
+    }),
+  });
+  document.getElementById("manual-text").value = "";
+  document.getElementById("manual-status").textContent = "Training sample saved.";
+  refreshDashboard();
+}
+
+async function runBatch() {
+  const texts = document.getElementById("batch-text").value.split("\n").map((line) => line.trim()).filter(Boolean);
+  if (!texts.length) return;
+  const data = await api("/api/batch", {
+    method: "POST",
+    body: JSON.stringify({ texts, student_name: "Batch Upload" }),
+  });
+  document.getElementById("batch-output").textContent = `${data.count} messages analyzed and saved.`;
+  refreshDashboard();
+}
+
+async function labelSample(id, label) {
+  await api(`/api/samples/${id}/label`, {
+    method: "PATCH",
+    body: JSON.stringify({ label }),
+  });
+  refreshDashboard();
+}
+
+async function retrainModel() {
+  const data = await api("/api/retrain", { method: "POST" });
+  await refreshDashboard();
+  alert(`Model retrained with ${data.metrics.samples} labeled samples. Accuracy: ${Math.round(data.metrics.accuracy * 100)}%`);
+}
+
+function renderSamples(samples) {
+  const tbody = document.getElementById("samples-table");
+  tbody.innerHTML = samples.map((sample) => {
+    const prediction = sample.prediction_label === null
+      ? "Not predicted"
+      : `${sample.prediction_label ? "Bullying" : "Safe"} (${sample.prediction_risk || 0}%)`;
+    const label = sample.label === null ? "Unlabeled" : (sample.label ? "Cyberbullying" : "Safe");
+    return `
+      <tr>
+        <td>${sample.id}</td>
+        <td>${escapeHtml(sample.student_name)}</td>
+        <td class="text-cell">${escapeHtml(sample.text)}</td>
+        <td>${prediction}</td>
+        <td>${label}</td>
+        <td>
+          <div class="label-actions">
+            <button class="mini-btn safe" onclick="labelSample(${sample.id}, 0)">Safe</button>
+            <button class="mini-btn bully" onclick="labelSample(${sample.id}, 1)">Bully</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join("");
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+api("/api/me")
+  .then((data) => {
+    if (data.user) enterApp(data.user);
+  })
+  .catch(() => {});
+</script>
+</body>
+</html>
